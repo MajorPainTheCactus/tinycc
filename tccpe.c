@@ -1923,12 +1923,23 @@ ST_FUNC int pe_load_file(struct TCCState *s1, int fd, const char *filename)
 {
     int ret = -1;
     char buf[10];
-    if (0 == strcmp(tcc_fileextension(filename), ".def"))
-        ret = pe_load_def(s1, fd);
-    else if (pe_load_res(s1, fd) == 0)
+    /* ModderSuite modification, 2026-09-04: -Wl,-no-import-libs refuses .def files and DLL
+       export tables here, the one funnel all PE import loading passes through. */
+    if (0 == strcmp(tcc_fileextension(filename), ".def")) {
+        if (s1->no_import_libs) {
+            tcc_error_noabort("'%s': import libraries are disabled (-Wl,-no-import-libs)", filename);
+            ret = 0;
+        } else
+            ret = pe_load_def(s1, fd);
+    } else if (pe_load_res(s1, fd) == 0)
         ret = 0;
-    else if (read_mem(fd, 0, buf, 4) && 0 == memcmp(buf, "MZ", 2))
-        ret = pe_load_dll(s1, fd, filename);
+    else if (read_mem(fd, 0, buf, 4) && 0 == memcmp(buf, "MZ", 2)) {
+        if (s1->no_import_libs) {
+            tcc_error_noabort("'%s': linking DLL exports is disabled (-Wl,-no-import-libs)", filename);
+            ret = 0;
+        } else
+            ret = pe_load_dll(s1, fd, filename);
+    }
     return ret;
 }
 

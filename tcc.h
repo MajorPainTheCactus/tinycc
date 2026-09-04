@@ -737,6 +737,8 @@ struct TCCState {
     unsigned char nostdinc; /* if true, no standard headers are added */
     unsigned char nostdlib; /* if true, no standard libraries are added */
     unsigned char nostdlib_paths; /* if true, the default paths are not searched for libraries */
+    unsigned char no_import_libs; /* if true, refuse .def files and DLL export tables entirely
+                                     (ModderSuite modification, 2026-09-04: -Wl,-no-import-libs) */
     unsigned char nocommon; /* if true, do not use common symbols for .bss data */
     unsigned char static_link; /* if true, static linking is performed */
     unsigned char rdynamic; /* if true, all symbols are exported */

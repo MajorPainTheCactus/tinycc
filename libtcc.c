@@ -995,8 +995,10 @@ LIBTCCAPI int tcc_set_output_type(TCCState *s, int output_type)
 
 #ifdef TCC_TARGET_PE
 # ifdef TCC_IS_NATIVE
-    /* allow linking with system dll's directly */
-    tcc_add_systemdir(s);
+    /* allow linking with system dll's directly
+       (ModderSuite modification, 2026-09-04: skipped under -Wl,-no-import-libs) */
+    if (!s->no_import_libs)
+        tcc_add_systemdir(s);
 # endif
 
 #elif defined TCC_TARGET_MACHO
@@ -1441,6 +1443,9 @@ static int tcc_set_linker(TCCState *s, const char *optarg)
             s->symbolic = 1;
         } else if (link_option(&o, "nostdlib")) {
             s->nostdlib_paths = 1;
+        } else if (link_option(&o, "no-import-libs")) {
+            /* ModderSuite modification, 2026-09-04: embedded-jail option */
+            s->no_import_libs = 1;
         } else if (link_option(&o, "e=|entry=")) {
             tcc_set_str(&s->elf_entryname, o.arg);
         } else if (link_option(&o, "image-base=|Ttext=")) {
