@@ -1825,6 +1825,9 @@ ST_FUNC void preprocess(int is_bof)
         break;
     case TOK_INCLUDE:
     case TOK_INCLUDE_NEXT:
+        /* Fab modification, 2026-11-20: -fno-include-after-line */
+        if (s1->include_refused)
+            tcc_error("#%s is refused after #line (-fno-include-after-line)", get_tok_str(tok, NULL));
         parse_include(s1, tok - TOK_INCLUDE, 0);
         goto the_end;
     case TOK_IFNDEF:
@@ -1940,6 +1943,10 @@ ST_FUNC void preprocess(int is_bof)
         if (file->fd > 0)
             total_lines += file->line_num - n;
         file->line_num = n;
+        /* Fab modification, 2026-11-20: a #line in the top-level file (not in a header it
+           includes, nor in the <command line> buffer) starts the -fno-include-after-line refusal */
+        if (s1->no_include_after_line && !file->prev)
+            s1->include_refused = 1;
         break;
 
     case TOK_ERROR:
@@ -1973,6 +1980,10 @@ ST_FUNC void preprocess(int is_bof)
         if (tok == '!' && is_bof)
             /* '#!' is ignored at beginning to allow C scripts. */
             goto ignore;
+        /* Fab modification, 2026-11-20: TinyCC has no #import; under -fno-include-after-line
+           it is refused rather than ignored */
+        if (s1->include_refused && tok >= TOK_IDENT && !strcmp(get_tok_str(tok, NULL), "import"))
+            tcc_error("#import is refused after #line (-fno-include-after-line)");
         tcc_warning("ignoring unknown preprocessing directive #%s", get_tok_str(tok, &tokc));
     ignore:
         skip_to_eol(0);
@@ -3644,6 +3655,7 @@ ST_FUNC void preprocess_start(TCCState *s1, int filetype)
     pp_expr = 0;
     pp_counter = 0;
     pp_debug_tok = pp_debug_symv = 0;
+    s1->include_refused = 0; /* Fab modification, 2026-11-20: -fno-include-after-line */
     s1->pack_stack[0] = 0;
     s1->pack_stack_ptr = s1->pack_stack;
 

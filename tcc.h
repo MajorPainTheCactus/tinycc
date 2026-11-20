@@ -739,6 +739,11 @@ struct TCCState {
     unsigned char nostdlib_paths; /* if true, the default paths are not searched for libraries */
     unsigned char no_import_libs; /* if true, refuse .def files and DLL export tables entirely
                                      (ModderSuite modification, 2026-09-04: -Wl,-no-import-libs) */
+    unsigned char no_include_after_line; /* if true, refuse #include, #include_next and #import once the
+                                            top-level file has passed a #line directive
+                                            (Fab modification, 2026-11-20: -fno-include-after-line) */
+    unsigned char include_refused; /* set by that #line, cleared by preprocess_start
+                                      (Fab modification, 2026-11-20) */
     unsigned char nocommon; /* if true, do not use common symbols for .bss data */
     unsigned char static_link; /* if true, static linking is performed */
     unsigned char rdynamic; /* if true, all symbols are exported */

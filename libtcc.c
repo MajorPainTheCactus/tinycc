@@ -1731,6 +1731,8 @@ static const FlagDef options_f[] = {
     { offsetof(TCCState, reverse_funcargs), 0, "reverse-funcargs" },
     { offsetof(TCCState, gnu89_inline), 0, "gnu89-inline" },
     { offsetof(TCCState, unwind_tables), 0, "asynchronous-unwind-tables" },
+    /* Fab modification, 2026-11-20: -fno-include-after-line, off by default */
+    { offsetof(TCCState, no_include_after_line), FD_INVERT, "include-after-line" },
     { 0, 0, NULL }
 };
 
